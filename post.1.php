@@ -55,5 +55,4 @@ foreach ( $invoices as $invoice )
 	}
 }
 
-
 echo json_encode( $retunValue );
