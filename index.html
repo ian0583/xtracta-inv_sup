@@ -4,21 +4,53 @@
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <title>Xtracta Test</title>
 <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+<link href="css/style.css" rel="stylesheet">
 
 <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.bundle.js"></script>
 </head>
-<body>
+<body class="text-center">
 
-	<div class="container-fluid">
+	<div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+		<header class="masthead mb-auto">
+		  <div class="inner">
+			<h3 class="masthead-brand">Xtracta Test</h3>
+		  </div>
+		</header>
 
-		<form class="form-inline">
-			<div class="form-group mb-2">
-				<label for="numberInput" class="sr-only">Email</label>
+		<main role="main" class="inner cover">
+			<form class="form-signin">
+				<img class="mb-4" src="css/minified.png" alt="" width="275">
+				<h1 class="h3 mb-3 font-weight-normal">Upload "invoice.txt"</h1>
 				<input type="file" class="form-control" name="textfile" id="fileInput">
-			</div>
-			<input type="button" class="btn btn-primary mb-2" id="upload" value="Check File">
-		</form>
+				<button class="btn btn-lg btn-primary btn-block" id="upload" type="submit">Check Supplier</button>
+				<p class="mt-5 mb-3 text-muted">&copy; 2018</p>
+			</form>
 
+		</main>
+
+		<footer class="mastfoot mt-auto">
+		  <!-- <div class="inner">
+			<p>Cover template for <a href="https://getbootstrap.com/">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
+		  </div> -->
+		</footer>
+	</div>
+
+	<div class="modal" tabindex="-1" role="dialog" id="msgModal">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Supplier found!</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<p id="message"></p>
+				</div>
+
+			</div>
+		</div>
 	</div>
 
 	<script>
@@ -46,7 +78,7 @@
 
 			$.ajax({
 				type: "POST",
-				url: "post.php",
+				url: "post.1.php",
 				xhr: function () {
 					var myXhr = $.ajaxSettings.xhr();
 					if (myXhr.upload) {
@@ -55,8 +87,10 @@
 					return myXhr;
 				},
 				success: function (data) {
-					console.log(data)
-					console.log(JSON.parse(data))
+					var res = JSON.parse(data)
+					console.log(res[0])
+					$('#message').text(res[0].SupplierName);
+					$('#msgModal').modal('toggle')
 				},
 				error: function (error) {
 					alert( "Sorry, there was a problem!" );
@@ -73,19 +107,6 @@
 			});
 		};
 
-		Upload.prototype.progressHandling = function (event) {
-			var percent = 0;
-			var position = event.loaded || event.position;
-			var total = event.total;
-			var progress_bar_id = "#progress-wrp";
-			if (event.lengthComputable) {
-				percent = Math.ceil(position / total * 100);
-			}
-			// update progressbars classes so it fits your code
-			$(progress_bar_id + " .progress-bar").css("width", +percent + "%");
-			$(progress_bar_id + " .status").text(percent + "%");
-		};
-
 		$(function(){
 			$("#upload").on("click", function (e) {
 
@@ -95,10 +116,18 @@
 				var file = $("#fileInput")[0].files[0];
 				var upload = new Upload(file);
 
-				// maby check size or type here with upload.getSize() and upload.getType()
+				var fileType = upload.getType();
 
-				// execute upload
-				upload.doUpload();
+				console.log(fileType)
+				if (fileType == 'text/plain')
+				{
+					// execute upload
+					upload.doUpload();
+				}
+				else
+				{
+					alert('File type is not supported')
+				}
 			});
 
 		});
