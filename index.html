@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Xtracta Test</title>
+<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+
+<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+
+	<div class="container-fluid">
+
+		<form class="form-inline">
+			<div class="form-group mb-2">
+				<label for="numberInput" class="sr-only">Email</label>
+				<input type="file" class="form-control" name="textfile" id="fileInput">
+			</div>
+			<input type="button" class="btn btn-primary mb-2" id="upload" value="Check File">
+		</form>
+
+	</div>
+
+	<script>
+
+		var Upload = function (file) {
+			this.file = file;
+		};
+
+		Upload.prototype.getType = function() {
+			return this.file.type;
+		};
+		Upload.prototype.getSize = function() {
+			return this.file.size;
+		};
+		Upload.prototype.getName = function() {
+			return this.file.name;
+		};
+		Upload.prototype.doUpload = function () {
+			var that = this;
+			var formData = new FormData();
+
+			// add assoc key values, this will be posts values
+			formData.append("textfile", this.file, this.getName());
+			formData.append("upload_file", true);
+
+			$.ajax({
+				type: "POST",
+				url: "post.php",
+				xhr: function () {
+					var myXhr = $.ajaxSettings.xhr();
+					if (myXhr.upload) {
+						myXhr.upload.addEventListener('progress', that.progressHandling, false);
+					}
+					return myXhr;
+				},
+				success: function (data) {
+					console.log(data)
+					console.log(JSON.parse(data))
+				},
+				error: function (error) {
+					alert( "Sorry, there was a problem!" );
+					console.log( "Error: " + errorThrown );
+					console.log( "Status: " + status );
+					console.dir( xhr );
+				},
+				async: true,
+				data: formData,
+				cache: false,
+				contentType: false,
+				processData: false,
+				timeout: 60000
+			});
+		};
+
+		Upload.prototype.progressHandling = function (event) {
+			var percent = 0;
+			var position = event.loaded || event.position;
+			var total = event.total;
+			var progress_bar_id = "#progress-wrp";
+			if (event.lengthComputable) {
+				percent = Math.ceil(position / total * 100);
+			}
+			// update progressbars classes so it fits your code
+			$(progress_bar_id + " .progress-bar").css("width", +percent + "%");
+			$(progress_bar_id + " .status").text(percent + "%");
+		};
+
+		$(function(){
+			$("#upload").on("click", function (e) {
+
+				e.preventDefault();
+				e.stopPropagation();
+
+				var file = $("#fileInput")[0].files[0];
+				var upload = new Upload(file);
+
+				// maby check size or type here with upload.getSize() and upload.getType()
+
+				// execute upload
+				upload.doUpload();
+			});
+
+		});
+	</script>
+</body>
+</html>
