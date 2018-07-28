@@ -34,23 +34,38 @@ else
 foreach ( $invoices as $invoice )
 {
 	$firstword = $invoice[ 'word' ];
-	$regex = "/" . preg_quote( $firstword, '/' ) . "/i";
+	$regex = "/^" . preg_quote( $firstword, '/' ) . "/i";
 
 	$matches = array_filter($data, function($a) use($regex)  {
 		return preg_grep($regex, $a);
 	});
 	if ( !!$matches )
 	{
-		$key = array_search($invoice['word_id']+1, array_column($invoices,'word_id'));
-		$newword = $firstword . ' ' . $invoices[$key]['word'];
-		$regex = "/" . preg_quote( $newword, '/' ) . "/i";
-		$matches = array_filter($matches, function($a) use($regex)  {
-			return preg_grep($regex, $a);
-		});
-		if (!!$matches)
+		foreach ($matches as $match)
 		{
-			$retunValue = array_values($matches);
-			break;
+			if ( count(explode(' ', $match['SupplierName'])) > 1 )
+			{
+				$newword = $firstword;
+				for ($i = 1; $i < count(explode(' ', $match['SupplierName'])); $i ++ )
+				{
+					$key = array_search($invoice['word_id']+$i, array_column($invoices,'word_id'));
+					$newword .= ' ' . $invoices[$key]['word'];
+					$regex = "/" . preg_quote( $newword, '/' ) . "/i";
+					$matches = array_filter($matches, function($a) use($regex)  {
+						return preg_grep($regex, $a);
+					});
+				}
+				if (!!$matches)
+				{
+					$retunValue = array_values($matches);
+					break 2;
+				}
+			}
+			else
+			{
+				$retunValue = array_values($matches);
+				break 2;
+			}
 		}
 	}
 }
